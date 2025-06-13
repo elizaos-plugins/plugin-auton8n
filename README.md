@@ -1,4 +1,4 @@
-# 🤖 ElizaOS n8n Creation Plugin
+# 🤖 ElizaOS Automated n8n Creation Plugin
 
 > **Transform your ElizaOS agents into autonomous plugin developers!** This revolutionary plugin empowers AI agents to create, build, test, and deploy new ElizaOS plugins using natural language or structured specifications.
 
@@ -7,7 +7,7 @@
 
 ## 🌟 What is AutoN8n?
 
-AutoN8n (Automation + N8n) is a groundbreaking ElizaOS plugin that enables **AI-driven plugin development**. Your agents can now:
+AutoN8n (Auomated n8n) is a groundbreaking ElizaOS plugin that enables **AI-driven plugin development**. Your agents can now:
 
 - 🧠 **Generate complete plugins** from simple descriptions
 - 🔄 **Iteratively refine code** through AI-powered development cycles
