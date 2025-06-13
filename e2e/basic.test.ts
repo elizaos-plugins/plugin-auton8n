@@ -1,8 +1,8 @@
 import type { TestSuite } from '@elizaos/core';
 
 export class PluginDynamicTestSuite implements TestSuite {
-  name = 'plugin-dynamic';
-  description = 'Tests for the plugin-dynamic system integration';
+  name = 'plugin-autocoder';
+  description = 'Tests for the plugin-autocoder system integration';
 
   tests = [
     {

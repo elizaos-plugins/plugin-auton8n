@@ -1,230 +1,299 @@
-# ElizaOS Plugin
+# ElizaOS Plugin Dynamic Creation System
 
-This is an ElizaOS plugin built with the official plugin starter template.
+This plugin enables ElizaOS agents to autonomously create new plugins using AI-driven development. Agents can generate, build, test, and validate plugins based on specifications or natural language descriptions.
 
-## Getting Started
+## Features
 
-```bash
-# Create a new plugin (automatically adds "plugin-" prefix)
-elizaos create -t plugin solana
-# This creates: plugin-solana
-# Dependencies are automatically installed and built
+- **AI-Powered Code Generation**: Uses Claude (Anthropic) to generate TypeScript code
+- **Iterative Development**: Automatically refines code through up to 5 iterations
+- **Comprehensive Testing**: Built-in linting, testing with vitest, and validation
+- **Natural Language Support**: Create plugins from simple descriptions
+- **Job Management**: Track and control plugin creation jobs
 
-# Navigate to the plugin directory
-cd plugin-solana
+## Installation
 
-# Start development immediately
-elizaos dev
-```
-
-## Development
+1. Install the plugin in your ElizaOS project:
 
 ```bash
-# Start development with hot-reloading (recommended)
-elizaos dev
-
-# OR start without hot-reloading
-elizaos start
-# Note: When using 'start', you need to rebuild after changes:
-# bun run build
-
-# Test the plugin
-elizaos test
+npm install @elizaos/plugin-autocoder
 ```
 
-## Testing
+2. Set up your environment variables:
 
-ElizaOS provides a comprehensive testing structure for plugins:
+```bash
+ANTHROPIC_API_KEY=your_api_key_here
+```
 
-### Test Structure
-
-- **Component Tests** (`__tests__/` directory):
-
-  - **Unit Tests**: Test individual functions/classes in isolation
-  - **Integration Tests**: Test how components work together
-  - Run with: `elizaos test component`
-
-- **End-to-End Tests** (`e2e/` directory):
-
-  - Test the plugin within a full ElizaOS runtime
-  - Run with: `elizaos test e2e`
-
-- **Running All Tests**:
-  - `elizaos test` runs both component and e2e tests
-
-### Writing Tests
-
-Component tests use Vitest:
+3. Register the plugin in your agent configuration:
 
 ```typescript
-// Unit test example (__tests__/plugin.test.ts)
-describe('Plugin Configuration', () => {
-  it('should have correct plugin metadata', () => {
-    expect(starterPlugin.name).toBe('plugin-starter');
-  });
-});
+import { pluginDynamic } from '@elizaos/plugin-autocoder';
 
-// Integration test example (__tests__/integration.test.ts)
-describe('Integration: HelloWorld Action with StarterService', () => {
-  it('should handle HelloWorld action with StarterService', async () => {
-    // Test interactions between components
-  });
+const agent = new Agent({
+  plugins: [pluginDynamic],
+  // ... other configuration
 });
 ```
 
-E2E tests use ElizaOS test interface:
+## Usage
+
+### Creating a Plugin from Specification
 
 ```typescript
-// E2E test example (e2e/starter-plugin.test.ts)
-export class StarterPluginTestSuite implements TestSuite {
-  name = 'plugin_starter_test_suite';
-  tests = [
-    {
-      name: 'example_test',
-      fn: async (runtime) => {
-        // Test plugin in a real runtime
-      },
-    },
-  ];
+// Agent conversation example
+User: Create a plugin with the following specification:
+{
+    "name": "@elizaos/plugin-weather",
+    "description": "Weather information plugin",
+    "version": "1.0.0",
+    "actions": [
+        {
+            "name": "getCurrentWeather",
+            "description": "Get current weather for a location",
+            "parameters": {
+                "location": "string"
+            }
+        }
+    ],
+    "providers": [
+        {
+            "name": "weatherData",
+            "description": "Provides weather data context"
+        }
+    ]
 }
 
-export default new StarterPluginTestSuite();
+Agent: I'll create a weather information plugin for you. Let me start by generating the necessary components...
+Plugin creation job started with ID: abc123. Use checkPluginCreationStatus to monitor progress.
 ```
 
-The test utilities in `__tests__/test-utils.ts` provide mock objects and setup functions to simplify writing tests.
+### Creating a Plugin from Natural Language
 
-## Publishing & Continuous Development
+```typescript
+User: I need a plugin that helps manage todo lists with add, remove, and list functionality
 
-### Initial Setup
-
-Before publishing your plugin, ensure you meet these requirements:
-
-1. **npm Authentication**
-
-   ```bash
-   npm login
-   ```
-
-2. **GitHub Repository**
-
-   - Create a public GitHub repository for this plugin
-   - Add the 'elizaos-plugins' topic to the repository
-   - Use 'main' as the default branch
-
-3. **Required Assets**
-   - Add images to the `images/` directory:
-     - `logo.jpg` (400x400px square, <500KB)
-     - `banner.jpg` (1280x640px, <1MB)
-
-### Initial Publishing
-
-```bash
-# Test your plugin meets all requirements
-elizaos publish --test
-
-# Publish to npm + GitHub + registry (recommended)
-elizaos publish
+Agent: I'll create a todo list management plugin based on your description. This will include actions for adding, removing, and listing todos.
+I'm creating a plugin based on your description. Job ID: xyz789. Use checkPluginCreationStatus to monitor progress.
 ```
 
-This command will:
+### Checking Plugin Creation Status
 
-- Publish your plugin to npm for easy installation
-- Create/update your GitHub repository
-- Submit your plugin to the ElizaOS registry for discoverability
+```typescript
+User: What's the status of my plugin creation?
 
-### Continuous Development & Updates
+Agent: Plugin Creation Status: running
+Current Phase: building
+Progress: 60%
 
-**Important**: After your initial publish with `elizaos publish`, all future updates should be done using standard npm and git workflows, not the ElizaOS CLI.
+Recent logs:
+- Starting iteration 2
+- Generating plugin code...
+- Building plugin...
+- Running tests...
+- 5 tests passed
+```
 
-#### Standard Update Workflow
+### Canceling a Plugin Creation
 
-1. **Make Changes**
+```typescript
+User: Cancel the plugin creation
 
-   ```bash
-   # Edit your plugin code
-   elizaos dev  # Test locally with hot-reload
-   ```
+Agent: Plugin creation job has been cancelled.
+```
 
-2. **Test Your Changes**
+## Actions
 
-   ```bash
-   # Run all tests
-   elizaos test
+### createPlugin
 
-   # Run specific test types if needed
-   elizaos test component  # Component tests only
-   elizaos test e2e       # E2E tests only
-   ```
+Creates a new plugin from a JSON specification.
 
-3. **Update Version**
+**Parameters:**
 
-   ```bash
-   # Patch version (bug fixes): 1.0.0 → 1.0.1
-   npm version patch
+- `name`: Plugin name (e.g., "@elizaos/plugin-example")
+- `description`: Plugin description
+- `version`: Plugin version (default: "1.0.0")
+- `actions`: Array of actions to implement
+- `providers`: Array of providers to implement
+- `services`: Array of services to implement
+- `evaluators`: Array of evaluators to implement
+- `dependencies`: Additional npm dependencies
+- `environmentVariables`: Required environment variables
 
-   # Minor version (new features): 1.0.1 → 1.1.0
-   npm version minor
+### checkPluginCreationStatus
 
-   # Major version (breaking changes): 1.1.0 → 2.0.0
-   npm version major
-   ```
+Checks the status of the current plugin creation job.
 
-4. **Publish to npm**
+### cancelPluginCreation
 
-   ```bash
-   npm publish
-   ```
+Cancels the current plugin creation job.
 
-5. **Push to GitHub**
-   ```bash
-   git push origin main
-   git push --tags  # Push version tags
-   ```
+### createPluginFromDescription
 
-#### Why Use Standard Workflows?
+Creates a plugin from a natural language description.
 
-- **npm publish**: Directly updates your package on npm registry
-- **git push**: Updates your GitHub repository with latest code
-- **Automatic registry updates**: The ElizaOS registry automatically syncs with npm, so no manual registry updates needed
-- **Standard tooling**: Uses familiar npm/git commands that work with all development tools
+## Providers
 
-### Alternative Publishing Options (Initial Only)
+### plugin_creation_status
 
-```bash
-# Publish to npm only (skip GitHub and registry)
-elizaos publish --npm
+Provides the current status of active plugin creation jobs.
 
-# Publish but skip registry submission
-elizaos publish --skip-registry
+### plugin_creation_capabilities
 
-# Generate registry files locally without publishing
-elizaos publish --dry-run
+Provides information about the plugin creation service capabilities.
+
+## Architecture
+
+### Plugin Creation Workflow
+
+1. **Specification Phase**: Parse and validate the plugin specification
+2. **Generation Phase**: Use AI to generate TypeScript code
+3. **Build Phase**: Compile TypeScript to JavaScript
+4. **Lint Phase**: Run ESLint to check code quality
+5. **Test Phase**: Run vitest tests
+6. **Validation Phase**: AI validates the implementation
+7. **Iteration**: If validation fails, refine and repeat (max 5 iterations)
+
+### Directory Structure
+
+```
+plugin-autocoder/
+├── services/
+│   └── plugin-creation-service.ts    # Core service logic
+├── actions/
+│   └── plugin-creation-actions.ts    # Agent actions
+├── providers/
+│   └── plugin-creation-providers.ts  # Context providers
+├── utils/
+│   ├── plugin-templates.ts           # Code generation templates
+│   └── validation.ts                 # Validation utilities
+├── __tests__/                        # Test files
+└── index.ts                          # Main export
 ```
 
 ## Configuration
 
-The `agentConfig` section in `package.json` defines the parameters your plugin requires:
+### Environment Variables
 
-```json
-"agentConfig": {
-  "pluginType": "elizaos:plugin:1.0.0",
-  "pluginParameters": {
-    "API_KEY": {
-      "type": "string",
-      "description": "API key for the service"
-    }
-  }
-}
+- `ANTHROPIC_API_KEY`: Required for AI code generation
+- `PLUGIN_DATA_DIR`: Directory for plugin workspace (default: "./data")
+
+### Service Configuration
+
+The plugin creation service can be configured with:
+
+- `maxIterations`: Maximum refinement iterations (default: 5)
+- `timeout`: Job timeout in milliseconds
+- `workspace`: Custom workspace directory
+
+## Examples
+
+### Example 1: Database Plugin
+
+```typescript
+const specification = {
+  name: '@elizaos/plugin-database',
+  description: 'Database operations plugin',
+  actions: [
+    {
+      name: 'queryDatabase',
+      description: 'Execute a database query',
+      parameters: {
+        query: 'string',
+        params: 'array',
+      },
+    },
+  ],
+  services: [
+    {
+      name: 'DatabaseService',
+      description: 'Manages database connections',
+      methods: ['connect', 'disconnect', 'query'],
+    },
+  ],
+  dependencies: {
+    pg: '^8.0.0',
+  },
+  environmentVariables: [
+    {
+      name: 'DATABASE_URL',
+      description: 'PostgreSQL connection string',
+      required: true,
+      sensitive: true,
+    },
+  ],
+};
 ```
 
-Customize this section to match your plugin's requirements.
+### Example 2: API Integration Plugin
 
-## Documentation
+```typescript
+const specification = {
+  name: '@elizaos/plugin-api',
+  description: 'External API integration',
+  actions: [
+    {
+      name: 'callAPI',
+      description: 'Make an API request',
+      parameters: {
+        endpoint: 'string',
+        method: 'string',
+        body: 'object',
+      },
+    },
+  ],
+  providers: [
+    {
+      name: 'apiResponse',
+      description: 'Provides latest API response data',
+    },
+  ],
+};
+```
 
-Provide clear documentation about:
+## Troubleshooting
 
-- What your plugin does
-- How to use it
-- Required API keys or credentials
-- Example usage
-- Version history and changelog
+### Common Issues
+
+1. **"Plugin creation service not available"**
+
+   - Ensure the plugin is properly registered
+   - Check that the service has been initialized
+
+2. **"AI code generation not available"**
+
+   - Verify ANTHROPIC_API_KEY is set
+   - Check API key validity
+
+3. **Build failures**
+   - Review the error logs from the job status
+   - Check for missing dependencies
+   - Ensure TypeScript syntax is valid
+
+### Debug Mode
+
+Enable debug logging:
+
+```typescript
+process.env.DEBUG = 'elizaos:plugin-autocoder:*';
+```
+
+## Best Practices
+
+1. **Clear Specifications**: Provide detailed descriptions for better AI generation
+2. **Iterative Refinement**: Let the system run through iterations for better results
+3. **Test Coverage**: Ensure generated plugins include comprehensive tests
+4. **Environment Variables**: Use sensitive flags for secrets
+5. **Resource Management**: Cancel long-running jobs if needed
+
+## Contributing
+
+To contribute to the plugin dynamic creation system:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details

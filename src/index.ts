@@ -16,7 +16,7 @@ import pluginDynamicTestSuite from '../e2e/basic.test.ts';
 
 // Export the plugin
 export const pluginDynamic: Plugin = {
-  name: '@elizaos/plugin-dynamic',
+  name: '@elizaos/plugin-autocoder',
   description: 'Dynamic plugin creation system with AI-powered code generation',
   actions: [
     createPluginAction,
