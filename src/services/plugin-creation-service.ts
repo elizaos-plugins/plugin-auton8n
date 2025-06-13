@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { IAgentRuntime, logger, Service } from '@elizaos/core';
-import { exec, spawn } from 'child_process';
+import { exec, spawn, execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
 import { promisify } from 'util';
@@ -13,10 +13,12 @@ const execAsync = promisify(exec);
 export const PLUGIN_CREATION_SERVICE_TYPE = 'plugin_creation' as const;
 
 // Claude model configuration
-export enum ClaudeModel {
-  SONNET_3_5 = 'claude-3-5-sonnet-20241022',
-  OPUS_3 = 'claude-3-opus-20240229',
-}
+export const ClaudeModel = {
+  SONNET_3_5: 'claude-3-5-sonnet-20241022',
+  OPUS_3: 'claude-3-opus-20240229',
+} as const;
+
+export type ClaudeModel = typeof ClaudeModel[keyof typeof ClaudeModel];
 
 export interface PluginSpecification {
   name: string;
@@ -167,7 +169,7 @@ export class PluginCreationService extends Service {
     }
 
     // Initialize Anthropic if API key is provided
-    if (apiKey && !this.anthropic) {
+    if (apiKey) {
       this.anthropic = new Anthropic({ apiKey });
     }
 
@@ -850,24 +852,63 @@ Respond with JSON:
       let outputSize = 0;
       const maxOutputSize = 1024 * 1024; // 1MB limit
 
-      // On Windows and some test environments, we need to handle npm differently
-      const isWindows = process.platform === 'win32';
-      const actualCommand = isWindows && command === 'npm' ? 'npm.cmd' : command;
+      // Handle package manager commands
+      let actualCommand = command;
+      let actualArgs = args;
+      
+      if (command === 'npm') {
+        // Try to find a package manager that exists
+        const packageManagers = [
+          { cmd: 'bun', install: ['install'], run: ['run'], test: ['test'] },
+          { cmd: 'pnpm', install: ['install'], run: ['run'], test: ['test'] },
+          { cmd: 'yarn', install: ['install'], run: ['run'], test: ['test'] },
+          { cmd: 'npm', install: ['install'], run: ['run'], test: ['test'] }
+        ];
+        
+        // Check which package manager is available
+        for (const pm of packageManagers) {
+          try {
+            execSync(`which ${pm.cmd}`, { stdio: 'ignore' });
+            actualCommand = pm.cmd;
+            
+            // Adjust args based on package manager
+            if (args[0] === 'install') {
+              actualArgs = pm.install;
+            } else if (args[0] === 'run') {
+              actualArgs = [...pm.run, ...args.slice(1)];
+            } else if (args[0] === 'test') {
+              actualArgs = pm.test;
+            }
+            
+            this.logToJob(job.id, `Using ${pm.cmd} as package manager`);
+            break;
+          } catch {
+            // Try next package manager
+          }
+        }
+      }
 
-      // In test environment, we need to ensure npm is available
+      // In test environment, we need to ensure commands are available
       const spawnOptions: any = {
         cwd: job.outputPath,
-        env: { ...process.env, NODE_ENV: 'test' },
+        env: { ...process.env },
         shell: false, // Prevent shell injection
       };
 
-      // If we're running npm, ensure it's in the PATH or use npx
-      if (command === 'npm' && process.env.NODE_ENV === 'test') {
-        // In test env, try to find npm in common locations
-        spawnOptions.env.PATH = `/usr/local/bin:/usr/bin:/bin:${process.env.PATH || ''}`;
-      }
+      // Add common paths to PATH
+      const paths = [
+        '/usr/local/bin',
+        '/usr/bin',
+        '/bin',
+        '/opt/homebrew/bin',
+        `${process.env.HOME}/.bun/bin`,
+        `${process.env.HOME}/.nvm/versions/node/v23.11.0/bin`,
+        process.env.PATH
+      ].filter(Boolean);
+      
+      spawnOptions.env.PATH = paths.join(':');
 
-      const child = spawn(actualCommand, args, spawnOptions);
+      const child = spawn(actualCommand, actualArgs, spawnOptions);
 
       // Handle spawn errors (e.g., command not found)
       child.on('error', (error: any) => {

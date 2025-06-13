@@ -12,12 +12,13 @@ import {
   pluginRegistryProvider,
   pluginExistsProvider,
 } from './providers/plugin-creation-providers.ts';
-import pluginDynamicTestSuite from '../e2e/basic.test.ts';
+import { pluginCreationE2ETests } from './e2e/plugin-creation.test.ts';
+import { pluginActionsE2ETests } from './e2e/plugin-actions.test.ts';
 
 // Export the plugin
 export const pluginDynamic: Plugin = {
-  name: '@elizaos/plugin-autocoder',
-  description: 'Dynamic plugin creation system with AI-powered code generation',
+  name: '@elizaos/plugin-auton8n',
+  description: 'N8n workflow integration plugin with AI-powered plugin creation for ElizaOS',
   actions: [
     createPluginAction,
     checkPluginCreationStatusAction,
@@ -32,7 +33,7 @@ export const pluginDynamic: Plugin = {
   ],
   services: [PluginCreationService],
   evaluators: [],
-  tests: [pluginDynamicTestSuite],
+  tests: [pluginCreationE2ETests, pluginActionsE2ETests],
 };
 
 // Export individual components

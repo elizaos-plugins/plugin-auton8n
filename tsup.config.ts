@@ -6,7 +6,7 @@ export default defineConfig({
   tsconfig: './tsconfig.build.json', // Use build-specific tsconfig
   sourcemap: true,
   clean: true,
-  format: ['esm'], // Ensure you're targeting CommonJS
+  format: ['esm'], // Use ESM format like other ElizaOS plugins
   dts: true, // require DTS so we get d.ts in the dist folder on npm
   external: [
     'dotenv', // Externalize dotenv to prevent bundling
@@ -21,9 +21,11 @@ export default defineConfig({
     'os',
     'url',
     '@elizaos/core',
+    '@anthropic-ai/sdk', // Externalize Anthropic SDK
+    'anthropic', // Also externalize the anthropic package
     'zod',
     'punycode',
     'node-fetch',
-    'http'
+    'agentkeepalive',
   ],
 });

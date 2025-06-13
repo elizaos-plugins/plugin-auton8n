@@ -1,6 +1,6 @@
 {
-  "name": "@elizaos/plugin-autocoder",
-  "description": "Autocoder plugin for ElizaOS",
+  "name": "@elizaos/plugin-auton8n",
+  "description": "N8n workflow integration plugin for ElizaOS",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -60,13 +60,15 @@
     "dev": "elizaos dev",
     "build": "tsup",
     "lint": "prettier --write ./src",
-    "test:component": "vitest run",
-    "test:e2e": "elizaos test e2e --port 3037",
-    "test": "npm run test:component && npm run test:e2e",
+    "test": "elizaos test",
+    "test:e2e": "elizaos test e2e",
     "test:coverage": "vitest run --coverage",
     "publish": "elizaos publish",
     "format": "prettier --write ./src",
-    "format:check": "prettier --check ./src"
+    "format:check": "prettier --check ./src",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
   },
   "publishConfig": {
     "access": "public"

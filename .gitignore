@@ -55,3 +55,6 @@ temp/
 .elizadb/
 pglite/
 cache/
+
+test-data
+.eliza*

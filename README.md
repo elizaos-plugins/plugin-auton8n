@@ -15,7 +15,7 @@ This plugin enables ElizaOS agents to autonomously create new plugins using AI-d
 1. Install the plugin in your ElizaOS project:
 
 ```bash
-npm install @elizaos/plugin-autocoder
+npm install @elizaos/plugin-auton8n
 ```
 
 2. Set up your environment variables:
@@ -27,7 +27,7 @@ ANTHROPIC_API_KEY=your_api_key_here
 3. Register the plugin in your agent configuration:
 
 ```typescript
-import { pluginDynamic } from '@elizaos/plugin-autocoder';
+import { pluginDynamic } from '@elizaos/plugin-auton8n';
 
 const agent = new Agent({
   plugins: [pluginDynamic],
@@ -156,7 +156,7 @@ Provides information about the plugin creation service capabilities.
 ### Directory Structure
 
 ```
-plugin-autocoder/
+plugin-auton8n/
 ├── services/
 │   └── plugin-creation-service.ts    # Core service logic
 ├── actions/
@@ -274,7 +274,7 @@ const specification = {
 Enable debug logging:
 
 ```typescript
-process.env.DEBUG = 'elizaos:plugin-autocoder:*';
+process.env.DEBUG = 'elizaos:plugin-auton8n:*';
 ```
 
 ## Best Practices

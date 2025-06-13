@@ -3,6 +3,7 @@ import {
   PluginCreationService,
   PluginSpecification,
   ClaudeModel,
+  PluginCreationJob,
 } from '../services/plugin-creation-service.ts';
 import { IAgentRuntime } from '@elizaos/core';
 import fs from 'fs-extra';
@@ -236,7 +237,8 @@ describe('E2E Plugin Creation Tests', () => {
     for (const job of allJobs) {
       if (job.status === 'running' && job.childProcess) {
         try {
-          job.childProcess.kill('SIGTERM');
+          // Use SIGKILL for immediate termination
+          job.childProcess.kill('SIGKILL');
         } catch (e) {
           // Ignore errors killing processes
         }
@@ -244,20 +246,32 @@ describe('E2E Plugin Creation Tests', () => {
       service.cancelJob(job.id);
     }
 
-    // Wait a bit for processes to terminate
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // Stop the service to ensure all jobs are cleaned up
+    await service.stop();
 
-    // Cleanup test data - use rm with force to ensure all nested directories are removed
+    // Wait for processes to fully terminate
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Cleanup test data - use rm with force and retries
     if (await fs.pathExists(testDataDir)) {
-      try {
-        await fs.rm(testDataDir, { recursive: true, force: true });
-      } catch (error) {
-        // If still can't remove, try again after a longer wait
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await fs.rm(testDataDir, { recursive: true, force: true });
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          await fs.rm(testDataDir, { recursive: true, force: true, maxRetries: 3 });
+          break;
+        } catch (error) {
+          retries--;
+          if (retries === 0) {
+            // Last resort - ignore the error
+            console.warn('Could not clean up test directory:', error);
+          } else {
+            // Wait before retry
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
       }
     }
-  });
+  }, 30000); // Increase timeout to 30 seconds for cleanup
 
   describe('Time Plugin Creation', () => {
     it('should create a working time plugin', async () => {
@@ -378,7 +392,13 @@ describe('E2E Plugin Creation Tests', () => {
   describe('Plugin Registry Integration', () => {
     it('should track all created plugins', async () => {
       // Create multiple plugins
-      mockAnthropicCreate.mockResolvedValue(mockSuccessfulAIResponse('test'));
+      mockAnthropicCreate
+        .mockResolvedValueOnce(mockSuccessfulAIResponse(TIME_PLUGIN_SPEC.name))
+        .mockResolvedValueOnce({ content: [{ type: 'text', text: JSON.stringify({ score: 95, production_ready: true, issues: [], suggestions: [] }) }] })
+        .mockResolvedValueOnce(mockSuccessfulAIResponse(ASTRAL_CHART_SPEC.name))
+        .mockResolvedValueOnce({ content: [{ type: 'text', text: JSON.stringify({ score: 95, production_ready: true, issues: [], suggestions: [] }) }] })
+        .mockResolvedValueOnce(mockSuccessfulAIResponse(SHELL_COMMAND_SPEC.name))
+        .mockResolvedValueOnce({ content: [{ type: 'text', text: JSON.stringify({ score: 95, production_ready: true, issues: [], suggestions: [] }) }] });
 
       await service.createPlugin(TIME_PLUGIN_SPEC, 'test-api-key');
       await service.createPlugin(ASTRAL_CHART_SPEC, 'test-api-key');
@@ -410,16 +430,45 @@ describe('E2E Plugin Creation Tests', () => {
       const templateExists = await fs.pathExists(templatePath);
       expect(templateExists).toBe(true);
 
-      mockAnthropicCreate.mockResolvedValue(mockSuccessfulAIResponse(TIME_PLUGIN_SPEC.name));
+      // Mock both code generation and validation responses
+      mockAnthropicCreate
+        .mockResolvedValueOnce(mockSuccessfulAIResponse(TIME_PLUGIN_SPEC.name))
+        .mockResolvedValueOnce({
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                score: 95,
+                production_ready: true,
+                issues: [],
+                suggestions: [],
+              }),
+            },
+          ],
+        });
 
       const jobId = await service.createPlugin(TIME_PLUGIN_SPEC, 'test-api-key', {
         useTemplate: true,
       });
 
-      // Wait for the job to start processing
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for the job to progress to setupPluginWorkspace
+      let attempts = 0;
+      let job: PluginCreationJob | null = null;
+      
+      while (attempts < 20) { // Max 2 seconds
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        job = service.getJobStatus(jobId);
+        
+        if (job && job.logs.length > 0) {
+          // Check if we have the log we're looking for
+          if (job.logs.some((log) => log.includes('Using plugin-starter template') || 
+                                     log.includes('Template not found, using fallback setup'))) {
+            break;
+          }
+        }
+        attempts++;
+      }
 
-      const job = service.getJobStatus(jobId);
       expect(job?.logs.some((log) => log.includes('Using plugin-starter template'))).toBe(true);
 
       // Restore fake timers
@@ -445,10 +494,24 @@ describe('E2E Plugin Creation Tests', () => {
           useTemplate: true,
         });
 
-        // Wait for the job to start processing
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Wait for the job to progress to setupPluginWorkspace
+        let attempts = 0;
+        let job: PluginCreationJob | null = null;
+        
+        while (attempts < 20) { // Max 2 seconds
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          job = service.getJobStatus(jobId);
+          
+          if (job && job.logs.length > 0) {
+            // Check if we have the log we're looking for
+            if (job.logs.some((log) => log.includes('Using plugin-starter template') || 
+                                       log.includes('Template not found, using fallback setup'))) {
+              break;
+            }
+          }
+          attempts++;
+        }
 
-        const job = service.getJobStatus(jobId);
         expect(
           job?.logs.some((log) => log.includes('Template not found, using fallback setup'))
         ).toBe(true);

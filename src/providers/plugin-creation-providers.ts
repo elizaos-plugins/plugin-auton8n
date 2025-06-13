@@ -71,4 +71,3 @@ export const pluginCreationCapabilitiesProvider: Provider = {
 };
 
 export { pluginExistsProvider, pluginRegistryProvider } from './plugin-registry-provider';
-

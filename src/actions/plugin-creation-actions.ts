@@ -1,8 +1,6 @@
 import { Action, HandlerCallback, IAgentRuntime, Memory, State } from '@elizaos/core';
 import { z } from 'zod';
-import {
-  type PluginSpecification
-} from '../services/plugin-creation-service.ts';
+import { type PluginSpecification } from '../services/plugin-creation-service.ts';
 import { getPluginCreationService } from '../utils/get-plugin-creation-service.ts';
 import { isValidJsonSpecification, validatePrompt } from '../utils/validation.ts';
 
