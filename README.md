@@ -1,299 +1,370 @@
-# ElizaOS Plugin Dynamic Creation System
+# 🤖 ElizaOS n8n Creation Plugin
 
-This plugin enables ElizaOS agents to autonomously create new plugins using AI-driven development. Agents can generate, build, test, and validate plugins based on specifications or natural language descriptions.
+> **Transform your ElizaOS agents into autonomous plugin developers!** This revolutionary plugin empowers AI agents to create, build, test, and deploy new ElizaOS plugins using natural language or structured specifications.
 
-## Features
+[![npm version](https://img.shields.io/npm/v/@elizaos/plugin-auton8n.svg)](https://www.npmjs.com/package/@elizaos/plugin-auton8n)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- **AI-Powered Code Generation**: Uses Claude (Anthropic) to generate TypeScript code
-- **Iterative Development**: Automatically refines code through up to 5 iterations
-- **Comprehensive Testing**: Built-in linting, testing with vitest, and validation
-- **Natural Language Support**: Create plugins from simple descriptions
-- **Job Management**: Track and control plugin creation jobs
+## 🌟 What is AutoN8n?
 
-## Installation
+AutoN8n (Automation + N8n) is a groundbreaking ElizaOS plugin that enables **AI-driven plugin development**. Your agents can now:
 
-1. Install the plugin in your ElizaOS project:
+- 🧠 **Generate complete plugins** from simple descriptions
+- 🔄 **Iteratively refine code** through AI-powered development cycles
+- ✅ **Automatically test and validate** generated plugins
+- 🚀 **Deploy production-ready code** without human intervention
+- 🔧 **Integrate with n8n workflows** for advanced automation scenarios
+
+## 🎯 Key Features
+
+### AI-Powered Development
+- **Claude AI Integration**: Leverages Anthropic's Claude for intelligent code generation
+- **Multi-Model Support**: Choose between Claude Sonnet 3.5 or Opus 3 models
+- **Context-Aware Generation**: Creates code that follows ElizaOS best practices
+
+### Autonomous Development Lifecycle
+- **5-Stage Pipeline**: Generation → Build → Lint → Test → Validation
+- **Self-Healing**: Automatically fixes errors through iterative refinement
+- **Quality Assurance**: Built-in code quality checks and AI validation
+
+### Developer Experience
+- **Natural Language Interface**: Create plugins by simply describing what you need
+- **Real-Time Progress Tracking**: Monitor plugin creation status and logs
+- **Job Management**: Start, track, and cancel plugin creation jobs
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- ElizaOS framework
+- Anthropic API key
+
+### Installation
 
 ```bash
+# Install the plugin
 npm install @elizaos/plugin-auton8n
+
+# Or with yarn
+yarn add @elizaos/plugin-auton8n
+
+# Or with pnpm
+pnpm add @elizaos/plugin-auton8n
 ```
 
-2. Set up your environment variables:
+### Configuration
 
-```bash
-ANTHROPIC_API_KEY=your_api_key_here
+1. Create a `.env` file:
+
+```env
+# Required
+ANTHROPIC_API_KEY=sk-ant-api03-...
+
+# Optional
+PLUGIN_DATA_DIR=./plugin-workspace
+CLAUDE_MODEL=claude-3-5-sonnet-20241022
 ```
 
-3. Register the plugin in your agent configuration:
+2. Register the plugin in your agent:
 
 ```typescript
 import { pluginDynamic } from '@elizaos/plugin-auton8n';
 
 const agent = new Agent({
+  name: "DevBot",
   plugins: [pluginDynamic],
   // ... other configuration
 });
 ```
 
-## Usage
+## 💬 Usage Examples
 
-### Creating a Plugin from Specification
+### Example 1: Create a Weather Plugin
+
+```
+User: Create a weather plugin that can fetch current weather and forecasts for any city
+
+Agent: I'll create a comprehensive weather plugin for you. This will include actions for fetching current weather and forecasts, with proper error handling and caching.
+
+🚀 Plugin creation started!
+📋 Job ID: 7d4b3c2a-8e9f-4a1b-9c5d-1234567890ab
+⏳ Status: Generating plugin code...
+
+The plugin will include:
+- getCurrentWeather action
+- getWeatherForecast action  
+- weatherProvider for context
+- Caching service for API efficiency
+- OpenWeatherMap API integration
+
+Use "check plugin status" to monitor progress.
+```
+
+### Example 2: Create from Specification
 
 ```typescript
-// Agent conversation example
-User: Create a plugin with the following specification:
+User: Create a plugin with this spec:
 {
-    "name": "@elizaos/plugin-weather",
-    "description": "Weather information plugin",
-    "version": "1.0.0",
-    "actions": [
-        {
-            "name": "getCurrentWeather",
-            "description": "Get current weather for a location",
-            "parameters": {
-                "location": "string"
-            }
-        }
-    ],
-    "providers": [
-        {
-            "name": "weatherData",
-            "description": "Provides weather data context"
-        }
-    ]
+  "name": "@elizaos/plugin-github",
+  "description": "GitHub integration for repo management",
+  "actions": [
+    {
+      "name": "createIssue",
+      "description": "Create a new GitHub issue",
+      "parameters": {
+        "repo": "string",
+        "title": "string", 
+        "body": "string",
+        "labels": "string[]"
+      }
+    },
+    {
+      "name": "mergePR",
+      "description": "Merge a pull request",
+      "parameters": {
+        "repo": "string",
+        "prNumber": "number"
+      }
+    }
+  ]
 }
 
-Agent: I'll create a weather information plugin for you. Let me start by generating the necessary components...
-Plugin creation job started with ID: abc123. Use checkPluginCreationStatus to monitor progress.
+Agent: Creating your GitHub integration plugin now...
 ```
 
-### Creating a Plugin from Natural Language
+### Example 3: Natural Language to Plugin
+
+```
+User: I need a plugin that helps track cryptocurrency prices and send alerts when prices change by more than 5%
+
+Agent: I'll create a cryptocurrency price tracking plugin with alerting capabilities. This will include:
+
+📊 Real-time price tracking
+🔔 Configurable price alerts (5% threshold)
+💰 Support for multiple cryptocurrencies
+📈 Price history tracking
+🚨 Alert notifications through multiple channels
+
+Starting development now... Job ID: abc-123-def
+```
+
+## 🛠️ Available Actions
+
+### `createPlugin`
+Creates a plugin from a detailed specification.
 
 ```typescript
-User: I need a plugin that helps manage todo lists with add, remove, and list functionality
-
-Agent: I'll create a todo list management plugin based on your description. This will include actions for adding, removing, and listing todos.
-I'm creating a plugin based on your description. Job ID: xyz789. Use checkPluginCreationStatus to monitor progress.
+// Example usage in conversation
+User: Create a plugin with the specification: { ... }
 ```
 
-### Checking Plugin Creation Status
+### `createPluginFromDescription`
+Creates a plugin from natural language description.
 
 ```typescript
-User: What's the status of my plugin creation?
-
-Agent: Plugin Creation Status: running
-Current Phase: building
-Progress: 60%
-
-Recent logs:
-- Starting iteration 2
-- Generating plugin code...
-- Building plugin...
-- Running tests...
-- 5 tests passed
+// Example usage
+User: Create a plugin that can translate text between languages
 ```
 
-### Canceling a Plugin Creation
+### `checkPluginCreationStatus`
+Monitors the progress of plugin creation.
 
 ```typescript
-User: Cancel the plugin creation
-
-Agent: Plugin creation job has been cancelled.
+// Example response
+Agent: 📊 Plugin Creation Status:
+├─ Status: running
+├─ Phase: testing (4/5)
+├─ Progress: 80%
+└─ Recent activity:
+   • ✅ Code generation complete
+   • ✅ Build successful
+   • ✅ Linting passed
+   • 🔄 Running tests... (18/20 passed)
 ```
 
-## Actions
+### `cancelPluginCreation`
+Cancels an active plugin creation job.
 
-### createPlugin
-
-Creates a new plugin from a JSON specification.
-
-**Parameters:**
-
-- `name`: Plugin name (e.g., "@elizaos/plugin-example")
-- `description`: Plugin description
-- `version`: Plugin version (default: "1.0.0")
-- `actions`: Array of actions to implement
-- `providers`: Array of providers to implement
-- `services`: Array of services to implement
-- `evaluators`: Array of evaluators to implement
-- `dependencies`: Additional npm dependencies
-- `environmentVariables`: Required environment variables
-
-### checkPluginCreationStatus
-
-Checks the status of the current plugin creation job.
-
-### cancelPluginCreation
-
-Cancels the current plugin creation job.
-
-### createPluginFromDescription
-
-Creates a plugin from a natural language description.
-
-## Providers
-
-### plugin_creation_status
-
-Provides the current status of active plugin creation jobs.
-
-### plugin_creation_capabilities
-
-Provides information about the plugin creation service capabilities.
-
-## Architecture
-
-### Plugin Creation Workflow
-
-1. **Specification Phase**: Parse and validate the plugin specification
-2. **Generation Phase**: Use AI to generate TypeScript code
-3. **Build Phase**: Compile TypeScript to JavaScript
-4. **Lint Phase**: Run ESLint to check code quality
-5. **Test Phase**: Run vitest tests
-6. **Validation Phase**: AI validates the implementation
-7. **Iteration**: If validation fails, refine and repeat (max 5 iterations)
-
-### Directory Structure
+## 🏗️ Architecture
 
 ```
-plugin-auton8n/
-├── services/
-│   └── plugin-creation-service.ts    # Core service logic
-├── actions/
-│   └── plugin-creation-actions.ts    # Agent actions
-├── providers/
-│   └── plugin-creation-providers.ts  # Context providers
-├── utils/
-│   ├── plugin-templates.ts           # Code generation templates
-│   └── validation.ts                 # Validation utilities
-├── __tests__/                        # Test files
-└── index.ts                          # Main export
+┌─────────────────────────────────────────────────────────────┐
+│                     AutoN8n Plugin System                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌─────────────┐    ┌──────────────┐    ┌───────────────┐  │
+│  │   Actions    │    │  Providers   │    │   Services    │  │
+│  │             │    │              │    │               │  │
+│  │ • create    │    │ • status     │    │ • Plugin      │  │
+│  │ • check     │◄───┤ • capability │◄───┤   Creation    │  │
+│  │ • cancel    │    │ • registry   │    │   Service     │  │
+│  │ • describe  │    │ • exists     │    │               │  │
+│  └─────────────┘    └──────────────┘    └───────┬───────┘  │
+│                                                   │          │
+│                    ┌──────────────────────────────▼───────┐  │
+│                    │     AI Code Generation Pipeline      │  │
+│                    ├──────────────────────────────────────┤  │
+│                    │                                      │  │
+│                    │  Generate → Build → Lint → Test     │  │
+│                    │     ↑                        │       │  │
+│                    │     └────── Validate ────────┘       │  │
+│                    │                                      │  │
+│                    │  Max 5 iterations for refinement    │  │
+│                    └──────────────────────────────────────┘  │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Configuration
+## 📁 Generated Plugin Structure
 
-### Environment Variables
+When AutoN8n creates a plugin, it generates a complete, production-ready structure:
 
-- `ANTHROPIC_API_KEY`: Required for AI code generation
-- `PLUGIN_DATA_DIR`: Directory for plugin workspace (default: "./data")
+```
+generated-plugin/
+├── src/
+│   ├── index.ts              # Main plugin export
+│   ├── actions/              # Action implementations
+│   ├── providers/            # Context providers
+│   ├── services/             # Service classes
+│   └── __tests__/            # Comprehensive tests
+├── package.json              # Dependencies & scripts
+├── tsconfig.json             # TypeScript configuration
+├── vitest.config.ts          # Test configuration
+├── .eslintrc.json            # Linting rules
+└── README.md                 # Plugin documentation
+```
 
-### Service Configuration
+## 🧪 Testing & Quality Assurance
 
-The plugin creation service can be configured with:
+AutoN8n ensures high-quality plugin generation through:
 
-- `maxIterations`: Maximum refinement iterations (default: 5)
-- `timeout`: Job timeout in milliseconds
-- `workspace`: Custom workspace directory
+1. **Automated Testing**: Every generated plugin includes comprehensive test suites
+2. **Code Linting**: ESLint validation ensures code style consistency
+3. **Type Safety**: Full TypeScript support with strict type checking
+4. **AI Validation**: Claude reviews the generated code for completeness
+5. **Iterative Refinement**: Automatically fixes issues through multiple iterations
 
-## Examples
+## 🔧 Advanced Configuration
 
-### Example 1: Database Plugin
+### Model Selection
+
+Choose between different Claude models based on your needs:
 
 ```typescript
-const specification = {
-  name: '@elizaos/plugin-database',
-  description: 'Database operations plugin',
-  actions: [
-    {
-      name: 'queryDatabase',
-      description: 'Execute a database query',
-      parameters: {
-        query: 'string',
-        params: 'array',
-      },
-    },
-  ],
-  services: [
-    {
-      name: 'DatabaseService',
-      description: 'Manages database connections',
-      methods: ['connect', 'disconnect', 'query'],
-    },
-  ],
-  dependencies: {
-    pg: '^8.0.0',
-  },
-  environmentVariables: [
-    {
-      name: 'DATABASE_URL',
-      description: 'PostgreSQL connection string',
-      required: true,
-      sensitive: true,
-    },
-  ],
+// Use Sonnet for faster generation
+process.env.CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
+
+// Use Opus for more complex plugins
+process.env.CLAUDE_MODEL = 'claude-3-opus-20240229';
+```
+
+### Custom Templates
+
+Provide your own plugin templates:
+
+```typescript
+const customSpec = {
+  name: '@company/plugin-custom',
+  template: 'path/to/custom-template',
+  // ... other options
 };
 ```
 
-### Example 2: API Integration Plugin
+## 🐛 Troubleshooting
 
-```typescript
-const specification = {
-  name: '@elizaos/plugin-api',
-  description: 'External API integration',
-  actions: [
-    {
-      name: 'callAPI',
-      description: 'Make an API request',
-      parameters: {
-        endpoint: 'string',
-        method: 'string',
-        body: 'object',
-      },
-    },
-  ],
-  providers: [
-    {
-      name: 'apiResponse',
-      description: 'Provides latest API response data',
-    },
-  ],
-};
+### Common Issues & Solutions
+
+#### "AI code generation not available"
+```bash
+# Check your API key
+echo $ANTHROPIC_API_KEY
+
+# Verify it starts with sk-ant-api
+# Get a key from https://console.anthropic.com
 ```
 
-## Troubleshooting
+#### Build failures
+```bash
+# Check job logs
+User: Check plugin creation status
 
-### Common Issues
+# Common fixes:
+# 1. Ensure all dependencies are specified
+# 2. Check for TypeScript syntax errors
+# 3. Verify import paths are correct
+```
 
-1. **"Plugin creation service not available"**
-
-   - Ensure the plugin is properly registered
-   - Check that the service has been initialized
-
-2. **"AI code generation not available"**
-
-   - Verify ANTHROPIC_API_KEY is set
-   - Check API key validity
-
-3. **Build failures**
-   - Review the error logs from the job status
-   - Check for missing dependencies
-   - Ensure TypeScript syntax is valid
+#### "Plugin already exists"
+```bash
+# The plugin name is already in use
+# Try a different name or check existing plugins
+User: Show me all created plugins
+```
 
 ### Debug Mode
 
-Enable debug logging:
+Enable detailed logging:
 
 ```typescript
+// In your .env file
+DEBUG=elizaos:plugin-auton8n:*
+
+// Or programmatically
 process.env.DEBUG = 'elizaos:plugin-auton8n:*';
 ```
 
-## Best Practices
+## 🤝 Contributing
 
-1. **Clear Specifications**: Provide detailed descriptions for better AI generation
-2. **Iterative Refinement**: Let the system run through iterations for better results
-3. **Test Coverage**: Ensure generated plugins include comprehensive tests
-4. **Environment Variables**: Use sensitive flags for secrets
-5. **Resource Management**: Cancel long-running jobs if needed
+We love contributions! Here's how to help:
 
-## Contributing
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
 
-To contribute to the plugin dynamic creation system:
+### Development Setup
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
+```bash
+# Clone the repo
+git clone https://github.com/elizaos/elizaos.git
+cd packages/plugin-auton8n
 
-## License
+# Install dependencies
+pnpm install
 
-MIT License - see LICENSE file for details
+# Run tests
+pnpm test
+
+# Build the plugin
+pnpm build
+```
+
+## 📚 Resources
+
+- [ElizaOS Documentation](https://elizaos.github.io/eliza/)
+- [Plugin Development Guide](https://elizaos.github.io/eliza/docs/plugins)
+- [API Reference](https://elizaos.github.io/eliza/api)
+- [Discord Community](https://discord.gg/elizaos)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with ❤️ by the ElizaOS community
+- Powered by [Anthropic's Claude](https://www.anthropic.com)
+- Inspired by [n8n](https://n8n.io) workflow automation
+
+---
+
+<p align="center">
+  <strong>Ready to give your AI agents superpowers? Install AutoN8n today!</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/elizaos/eliza">⭐ Star us on GitHub</a> •
+  <a href="https://twitter.com/elizaos">🐦 Follow on Twitter</a> •
+  <a href="https://discord.gg/elizaos">💬 Join our Discord</a>
+</p>
